@@ -1,37 +1,16 @@
-import Konva from "konva";
 import type { KonvaEventObject } from "konva/lib/Node";
 import { useEffect, useRef, useState } from "react";
-import { Image, Layer, Stage } from "react-konva";
-import { useDispatch, useSelector } from "react-redux";
+import { Layer, Stage } from "react-konva";
+import { useDispatch } from "react-redux";
 import useImage from "use-image";
 import { applyFilter, clearFilter } from "./features/filter/filterSlice";
-
-function Tool({
-  toolName,
-  onClick,
-  children,
-}: {
-  toolName: string;
-  onClick: (toolName: string) => void;
-  children: React.ReactNode;
-}) {
-  return (
-    <>
-      <button
-        className="h-16 w-full border-b-2 hover:bg-slate-200 active:bg-slate-300"
-        onClick={() => onClick(toolName)}
-      >
-        {children}
-      </button>
-    </>
-  );
-}
+import FilteredImage from "./components/FilteredImage";
+import Tool from "./components/Tool";
+import FilterSelection from "./components/FilterSelection";
 
 function Editor() {
   const [image, imageStatus] = useImage("/src/assets/cube.jpg");
   const viewportRef = useRef<HTMLDivElement>(null);
-  const imageRef = useRef<Konva.Image>(null);
-  const filter = useSelector((state: any) => state.filter);
   const dispatch = useDispatch();
 
   const [viewportDimensions, SetViewportDimensions] = useState({
@@ -80,15 +59,11 @@ function Editor() {
   };
 
   const handleBlur = () => {
-    imageRef.current?.clearCache();
     dispatch(applyFilter());
-    imageRef.current?.cache();
   };
 
   const handleClear = () => {
-    imageRef.current?.clearCache();
     dispatch(clearFilter());
-    imageRef.current?.cache();
   };
 
   return (
@@ -135,15 +110,7 @@ function Editor() {
               onWheel={handleZoom}
             >
               <Layer>
-                <Image
-                  image={image}
-                  // x={viewportDimensions.width / 2 - image.width / 2}
-                  // y={viewportDimensions.height / 2 - image.height / 2}
-                  width={image.width}
-                  height={image.height}
-                  {...filter}
-                  ref={imageRef}
-                />
+                <FilteredImage image={image} />
               </Layer>
             </Stage>
           )}
@@ -151,13 +118,7 @@ function Editor() {
 
         {/* Details */}
         <div className="h-full w-3/12 shrink-0 bg-slate-100 pt-14 shadow-md">
-          <div className="tool-name">
-            {/* {tool.slice(0, 1).toUpperCase() + tool.slice(1)} */}
-          </div>
-          <input
-            type="range"
-            // onChange={(e) => dispatch(change(parseInt(e.target.value)))}
-          />
+          <FilterSelection />
         </div>
       </main>
     </div>
