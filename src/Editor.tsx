@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { Image, Layer, Stage } from "react-konva";
 import { useDispatch, useSelector } from "react-redux";
 import useImage from "use-image";
-import { applyFilter } from "./features/filter/filterSlice";
+import { applyFilter, clearFilter } from "./features/filter/filterSlice";
 
 function Tool({
   toolName,
@@ -80,7 +80,14 @@ function Editor() {
   };
 
   const handleBlur = () => {
+    imageRef.current?.clearCache();
     dispatch(applyFilter());
+    imageRef.current?.cache();
+  };
+
+  const handleClear = () => {
+    imageRef.current?.clearCache();
+    dispatch(clearFilter());
     imageRef.current?.cache();
   };
 
@@ -108,8 +115,10 @@ function Editor() {
           <Tool toolName="blur" onClick={handleBlur}>
             Blur
           </Tool>
-          {/* <Tool toolName="crop" onClick={handleToolClick}>Crop</Tool>
-          <Tool toolName="resize" onClick={handleToolClick}>Resize</Tool> */}
+          <Tool toolName="clear" onClick={handleClear}>
+            Clear
+          </Tool>
+          {/*<Tool toolName="resize" onClick={handleToolClick}>Resize</Tool> */}
         </div>
 
         {/* Workspace */}
