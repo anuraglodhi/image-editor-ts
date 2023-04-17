@@ -2,21 +2,24 @@ import Konva from "konva";
 import type { KonvaEventObject } from "konva/lib/Node";
 import { useEffect, useRef, useState } from "react";
 import { Image, Layer, Stage } from "react-konva";
+import { useDispatch, useSelector } from "react-redux";
 import useImage from "use-image";
+import { applyFilter } from "./features/filter/filterSlice";
 
 function Tool({
   toolName,
-  // onClick,
+  onClick,
   children,
 }: {
   toolName: string;
-  // onClick: (toolName: string) => void;
+  onClick: (toolName: string) => void;
   children: React.ReactNode;
 }) {
   return (
     <>
       <button
-        className="h-16 w-full border-b-2 hover:bg-slate-200 active:bg-slate-300" /*onClick={() => onClick(toolName)}*/
+        className="h-16 w-full border-b-2 hover:bg-slate-200 active:bg-slate-300"
+        onClick={() => onClick(toolName)}
       >
         {children}
       </button>
@@ -27,6 +30,9 @@ function Tool({
 function Editor() {
   const [image, imageStatus] = useImage("/src/assets/cube.jpg");
   const viewportRef = useRef<HTMLDivElement>(null);
+  const imageRef = useRef<Konva.Image>(null);
+  const filter = useSelector((state: any) => state.filter);
+  const dispatch = useDispatch();
 
   const [viewportDimensions, SetViewportDimensions] = useState({
     width: 0,
@@ -73,6 +79,11 @@ function Editor() {
     stage.batchDraw();
   };
 
+  const handleBlur = () => {
+    dispatch(applyFilter());
+    imageRef.current?.cache();
+  };
+
   return (
     <div className="h-screen w-screen bg-slate-300">
       <header className="fixed top-0 z-10 flex h-14 w-full items-center justify-between bg-slate-100 px-4 drop-shadow-md">
@@ -94,9 +105,11 @@ function Editor() {
       <main className="flex h-full flex-nowrap overflow-hidden shadow-md">
         {/* Toolbar */}
         <div className="h-full w-2/12 max-w-[100px] shrink-0 bg-slate-100 pt-14">
-          <Tool toolName="blur" /*onClick={handleToolClick}*/>Blur</Tool>
-          <Tool toolName="crop" /*onClick={handleToolClick}*/>Crop</Tool>
-          <Tool toolName="resize" /*onClick={handleToolClick}*/>Resize</Tool>
+          <Tool toolName="blur" onClick={handleBlur}>
+            Blur
+          </Tool>
+          {/* <Tool toolName="crop" onClick={handleToolClick}>Crop</Tool>
+          <Tool toolName="resize" onClick={handleToolClick}>Resize</Tool> */}
         </div>
 
         {/* Workspace */}
@@ -119,9 +132,8 @@ function Editor() {
                   // y={viewportDimensions.height / 2 - image.height / 2}
                   width={image.width}
                   height={image.height}
-                  filters={[Konva.Filters.Blur, Konva.Filters.Sepia]}
-                  blurRadius={10}
-                  // ref={imageRef}
+                  {...filter}
+                  ref={imageRef}
                 />
               </Layer>
             </Stage>
