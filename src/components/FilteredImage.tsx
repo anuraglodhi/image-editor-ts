@@ -5,9 +5,10 @@ import { useSelector } from "react-redux";
 
 type FilteredImageProps = {
   image: HTMLImageElement;
+  scale: { x: number; y: number };
 };
 
-const FilteredImage = ({ image }: FilteredImageProps) => {
+const FilteredImage = ({ image, scale }: FilteredImageProps) => {
   const imageRef = useRef<Konva.Image>(null);
   const filter = useSelector((state: any) => state.filter);
 
@@ -20,8 +21,10 @@ const FilteredImage = ({ image }: FilteredImageProps) => {
       image={image}
       width={image.width}
       height={image.height}
-      {...filter}
+      {...filter.value}
+      scale={scale}
       ref={imageRef}
+      draggable
     />
   );
 };
