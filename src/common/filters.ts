@@ -5,6 +5,38 @@ const Filters = {
   none: {
     filters: [],
   },
+  invert: {
+    filters: [
+      Konva.Filters.Invert
+    ]
+  },
+  grayscale: {
+    filters: [
+      Konva.Filters.Grayscale
+    ],
+  },
+  fade: {
+    filters: [
+
+      Konva.Filters.HSL,
+      Konva.Filters.Contrast
+    ],
+    contrast: 15,
+    luminance: 0.45,
+    saturation:-0.25,
+  },
+  mono: {
+    filters: [
+      Konva.Filters.Grayscale,
+      Konva.Filters.Brighten,
+      Konva.Filters.Contrast,
+      Konva.Filters.HSL
+    ],
+    brightness: 0.12,
+    contrast: 30,
+    lightness: 4,
+
+  },
   retro: {
     filters: [
       Konva.Filters.Blur,
@@ -35,9 +67,40 @@ const Filters = {
     blue: 200,
     alpha: 0.4,
   },
-  green: {
-    filters: [Konva.Filters.Enhance],
-    enhance: 20,
+  // green: {
+  //   filters: [Konva.Filters.Enhance],
+  //   enhance: 20,
+  // },
+  outrun: {
+    filters: [
+      Konva.Filters.RGB, 
+      Konva.Filters.Brighten, 
+      Konva.Filters.Contrast,
+      Konva.Filters.HSL,
+    ],
+    hue: 25,
+    saturation: 1.2,
+    luminance: 0.05,
+    contrast: 25,
+    brightness: 0.1,
+    red:215,
+    green:60,
+    blue: 255,
+  },
+  "x-pro": {
+    filters: [
+      Konva.Filters.RGB, 
+      Konva.Filters.Brighten, 
+      Konva.Filters.Contrast,
+      Konva.Filters.HSL,
+    ],
+    luminance: 0.4,
+    contrast: 120,
+    hue: 25,
+    brightness: 0.15,
+    red:85,
+    green:150,
+    blue: 250,
   },
 };
 
