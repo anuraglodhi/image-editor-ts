@@ -14,6 +14,22 @@ const FilteredImage = ({ image, scale }: FilteredImageProps) => {
 
   useEffect(() => {
     imageRef.current?.cache();
+
+    imageRef.current?.on("mouseenter", () => {
+      document.body.style.cursor = "grab";
+    });
+
+    imageRef.current?.on("mousedown", () => {
+      document.body.style.cursor = "grabbing";
+    });
+
+    imageRef.current?.on("mouseup", () => {
+      document.body.style.cursor = "grab";
+    });
+
+    imageRef.current?.on("mouseleave", () => {
+      document.body.style.cursor = "default";
+    });
   }, []);
 
   return (
