@@ -68,7 +68,7 @@ function Editor() {
 
   return (
     <div className="h-screen w-screen bg-slate-300">
-      <header className="fixed top-0 z-10 flex h-14 w-full items-center justify-between bg-slate-100 px-4 drop-shadow-md">
+      <header className="fixed top-0 z-10 flex h-14 w-full items-center justify-between bg-slate-100 px-4 drop-shadow-md rounded-b-xl">
         <div className="">
           Dimensions{" "}
           {imageStatus === "loaded" && image && (
@@ -77,10 +77,13 @@ function Editor() {
             </span>
           )}
         </div>
-        <div className="name">Image Editor</div>
+        <div className="name flex flex-row from-neutral-800 font-semibold items-center">
+          <img src = "/Icon.svg" className="h-10 w-10 mx-2"/>
+          Image Editor
+        </div>
         <div className="share-section">
-          <button>Share</button>
-          <button>Download</button>
+          <button className="mx-2">Share</button>
+          <button className="mx-2">Download</button>
         </div>
       </header>
 

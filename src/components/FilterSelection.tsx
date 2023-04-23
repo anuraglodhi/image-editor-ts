@@ -13,8 +13,10 @@ const FilterButton = ({ name }: FilterButtonProps) => {
 
   return (
     <button
-      className="h-32 w-32 bg-slate-600 capitalize"
-      onClick={() => dispatch(applyFilter(name))}
+      className="h-32 w-32 bg-slate-500 capitalize font-semibold text-slate-200 text-2xl rounded-sm"
+      onClick={() => {
+        dispatch(applyFilter(name))
+      }}
     >
       {name}
     </button>
@@ -23,7 +25,7 @@ const FilterButton = ({ name }: FilterButtonProps) => {
 
 const FilterSelection = () => {
   return (
-    <div className="flex flex-wrap gap-2 p-2">
+    <div className="flex flex-wrap gap-2 p-4 justify-between">
       {filters.map((filterName) => {
         return <FilterButton name={filterName} key={filterName} />;
       })}
