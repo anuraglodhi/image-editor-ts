@@ -1,28 +1,12 @@
-import Konva from "konva";
 import type { KonvaEventObject } from "konva/lib/Node";
 import { useEffect, useRef, useState } from "react";
-import { Image, Layer, Stage } from "react-konva";
+import { Layer, Stage } from "react-konva";
+import { useDispatch } from "react-redux";
 import useImage from "use-image";
-
-function Tool({
-  toolName,
-  // onClick,
-  children,
-}: {
-  toolName: string;
-  // onClick: (toolName: string) => void;
-  children: React.ReactNode;
-}) {
-  return (
-    <>
-      <button
-        className="h-16 w-full border-b-2 hover:bg-slate-200 active:bg-slate-300" /*onClick={() => onClick(toolName)}*/
-      >
-        {children}
-      </button>
-    </>
-  );
-}
+import { applyFilter } from "./features/filter/filterSlice";
+import FilteredImage from "./components/FilteredImage";
+import Tool from "./components/Tool";
+import FilterSelection from "./components/FilterSelection";
 
 function Editor() {
   const [image, imageStatus] = useImage("/src/assets/cube.jpg");
@@ -33,12 +17,21 @@ function Editor() {
     height: 0,
   });
 
+  const [imageScale, setImageScale] = useState(1);
+
   useEffect(() => {
+    const width = viewportRef.current?.clientWidth || 0;
+    const height = viewportRef.current?.clientHeight || 0;
     SetViewportDimensions({
-      width: viewportRef.current?.clientWidth || 0,
-      height: viewportRef.current?.clientHeight || 0,
+      width: width,
+      height: height,
     });
-  }, []);
+
+    if (image)
+      setImageScale(
+        Math.min((width - 100) / image?.width, (height - 150) / image?.height)
+      );
+  }, [image]);
 
   const handleZoom = (e: KonvaEventObject<WheelEvent>) => {
     e.evt.preventDefault();
@@ -75,7 +68,7 @@ function Editor() {
 
   return (
     <div className="h-screen w-screen bg-slate-300">
-      <header className="fixed top-0 z-10 flex h-14 w-full items-center justify-between bg-slate-100 px-4 drop-shadow-md">
+      <header className="fixed top-0 z-10 flex h-14 w-full items-center justify-between bg-slate-100 px-4 drop-shadow-md rounded-b-xl">
         <div className="">
           Dimensions{" "}
           {imageStatus === "loaded" && image && (
@@ -84,19 +77,26 @@ function Editor() {
             </span>
           )}
         </div>
-        <div className="name">Image Editor</div>
+        <div className="name flex flex-row from-neutral-800 font-semibold items-center">
+          <img src = "/Icon.svg" className="h-10 w-10 mx-2"/>
+          Image Editor
+        </div>
         <div className="share-section">
-          <button>Share</button>
-          <button>Download</button>
+          <button className="mx-2">Share</button>
+          <button className="mx-2">Download</button>
         </div>
       </header>
 
       <main className="flex h-full flex-nowrap overflow-hidden shadow-md">
         {/* Toolbar */}
         <div className="h-full w-2/12 max-w-[100px] shrink-0 bg-slate-100 pt-14">
-          <Tool toolName="blur" /*onClick={handleToolClick}*/>Blur</Tool>
-          <Tool toolName="crop" /*onClick={handleToolClick}*/>Crop</Tool>
-          <Tool toolName="resize" /*onClick={handleToolClick}*/>Resize</Tool>
+          {/* <Tool toolName="blur" onClick={handleBlur}>
+            Blur
+          </Tool>
+          <Tool toolName="clear" onClick={handleClear}>
+            Clear
+          </Tool> */}
+          {/*<Tool toolName="resize" onClick={handleToolClick}>Resize</Tool> */}
         </div>
 
         {/* Workspace */}
@@ -108,20 +108,18 @@ function Editor() {
             <Stage
               width={viewportDimensions.width}
               height={viewportDimensions.height}
-              x={viewportDimensions.width / 2 - image.width / 2}
-              y={viewportDimensions.height / 2 - image.height / 2}
+              x={viewportDimensions.width / 2 - (image.width * imageScale) / 2}
+              y={
+                viewportDimensions.height / 2 -
+                (image.height * imageScale) / 2 +
+                25
+              }
               onWheel={handleZoom}
             >
               <Layer>
-                <Image
+                <FilteredImage
                   image={image}
-                  // x={viewportDimensions.width / 2 - image.width / 2}
-                  // y={viewportDimensions.height / 2 - image.height / 2}
-                  width={image.width}
-                  height={image.height}
-                  filters={[Konva.Filters.Blur, Konva.Filters.Sepia]}
-                  blurRadius={10}
-                  // ref={imageRef}
+                  scale={{ x: imageScale, y: imageScale }}
                 />
               </Layer>
             </Stage>
@@ -130,13 +128,7 @@ function Editor() {
 
         {/* Details */}
         <div className="h-full w-3/12 shrink-0 bg-slate-100 pt-14 shadow-md">
-          <div className="tool-name">
-            {/* {tool.slice(0, 1).toUpperCase() + tool.slice(1)} */}
-          </div>
-          <input
-            type="range"
-            // onChange={(e) => dispatch(change(parseInt(e.target.value)))}
-          />
+          <FilterSelection />
         </div>
       </main>
     </div>
