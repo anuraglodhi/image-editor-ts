@@ -7,10 +7,12 @@ import { applyFilter } from "./features/filter/filterSlice";
 import FilteredImage from "./components/FilteredImage";
 import Tool from "./components/Tool";
 import FilterSelection from "./components/FilterSelection";
+import { stages } from "konva/lib/Stage";
 
 function Editor() {
   const [image, imageStatus] = useImage("/src/assets/cube.jpg");
   const viewportRef = useRef<HTMLDivElement>(null);
+  const stageRef = useRef(null);
 
   const [viewportDimensions, SetViewportDimensions] = useState({
     width: 0,
@@ -66,6 +68,16 @@ function Editor() {
     stage.batchDraw();
   };
 
+  const handleDownload = () => {
+    const dataURL = stageRef.current.toDataURL();
+    let link = document.createElement('a');
+    link.download = 'cube.jpg';
+    link.href = dataURL;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
     <div className="h-screen w-screen bg-slate-300">
       <header className="fixed top-0 z-10 flex h-14 w-full items-center justify-between bg-slate-100 px-4 drop-shadow-md rounded-b-xl">
@@ -82,8 +94,11 @@ function Editor() {
           Image Editor
         </div>
         <div className="share-section">
-          <button className="mx-2">Share</button>
-          <button className="mx-2">Download</button>
+          <button className="mx-2 rounded-sm bg-slate-500 hover:bg-slate-600 border border-slate-300 px-2 py-2 font-semibold text-slate-200 drop-shadow-lg">Share</button>
+          <button
+            className="mx-2 rounded-sm bg-slate-500 hover:bg-slate-600 border border-slate-300 px-2 py-2 font-semibold text-slate-200 drop shadow-lg"
+            onClick={handleDownload}
+          >Download</button>
         </div>
       </header>
 
@@ -114,6 +129,7 @@ function Editor() {
                 (image.height * imageScale) / 2 +
                 25
               }
+              ref = {stageRef}
               onWheel={handleZoom}
             >
               <Layer>
