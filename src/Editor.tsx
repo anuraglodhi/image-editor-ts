@@ -1,6 +1,6 @@
 import type { KonvaEventObject } from "konva/lib/Node";
-import { useEffect, useRef, useState } from "react";
-import { Layer, Stage } from "react-konva";
+import { useEffect, useImperativeHandle, useRef, useState } from "react";
+import { KonvaNodeComponent, Layer, Stage } from "react-konva";
 import { useDispatch } from "react-redux";
 import useImage from "use-image";
 import { applyFilter } from "./features/filter/filterSlice";
@@ -8,11 +8,12 @@ import FilteredImage from "./components/FilteredImage";
 import Tool from "./components/Tool";
 import FilterSelection from "./components/FilterSelection";
 import { stages } from "konva/lib/Stage";
+import Konva from "konva";
 
 function Editor() {
   const [image, imageStatus] = useImage("/src/assets/cube.jpg");
   const viewportRef = useRef<HTMLDivElement>(null);
-  const stageRef = useRef(null);
+  const stageRef = useRef<Konva.Stage>(null);
 
   const [viewportDimensions, SetViewportDimensions] = useState({
     width: 0,
@@ -29,7 +30,7 @@ function Editor() {
       height: height,
     });
 
-    if (image)
+    if(image)
       setImageScale(
         Math.min((width - 100) / image?.width, (height - 150) / image?.height)
       );
@@ -68,14 +69,26 @@ function Editor() {
     stage.batchDraw();
   };
 
-  const handleDownload = () => {
-    const dataURL = stageRef.current.toDataURL();
-    let link = document.createElement('a');
-    link.download = 'cube.jpg';
-    link.href = dataURL;
+  const downloadURI = (uri: string | undefined, name: string | undefined) => {
+    var link = document.createElement("a");
+    link.download = name as string;
+    link.href = uri as string;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+  };
+
+  const handleDownload = () => {
+    const options = {
+      quality: 1,
+      pixelRatio: 1,
+      width: stageRef?.current!.getAbsoluteScale().x * image!.width,
+      height: stageRef?.current!.getAbsoluteScale().y * image!.height,
+      x: stageRef?.current?.getStage().getPosition().x,
+      y: stageRef?.current?.getStage().getPosition().y
+    };
+    const dataURL = stageRef?.current?.toDataURL(options);
+    downloadURI(dataURL,'cube.png');
   };
 
   return (
@@ -104,7 +117,7 @@ function Editor() {
 
       <main className="flex h-full flex-nowrap overflow-hidden shadow-md">
         {/* Toolbar */}
-        <div className="h-full w-2/12 max-w-[100px] shrink-0 bg-slate-100 pt-14">
+        {/* <div className="h-full w-2/12 max-w-[100px] shrink-0 bg-slate-100 pt-14"> */}
           {/* <Tool toolName="blur" onClick={handleBlur}>
             Blur
           </Tool>
@@ -112,7 +125,7 @@ function Editor() {
             Clear
           </Tool> */}
           {/*<Tool toolName="resize" onClick={handleToolClick}>Resize</Tool> */}
-        </div>
+        {/* </div> */}
 
         {/* Workspace */}
         <div
@@ -123,7 +136,8 @@ function Editor() {
             <Stage
               width={viewportDimensions.width}
               height={viewportDimensions.height}
-              x={viewportDimensions.width / 2 - (image.width * imageScale) / 2}
+              x={viewportDimensions.width / 2 - 
+                (image.width * imageScale) / 2}
               y={
                 viewportDimensions.height / 2 -
                 (image.height * imageScale) / 2 +
