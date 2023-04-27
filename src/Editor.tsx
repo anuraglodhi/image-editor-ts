@@ -1,16 +1,16 @@
 import type { KonvaEventObject } from "konva/lib/Node";
 import { useEffect, useRef, useState } from "react";
 import { Layer, Stage } from "react-konva";
-import { useDispatch } from "react-redux";
 import useImage from "use-image";
-import { applyFilter } from "./features/filter/filterSlice";
 import FilteredImage from "./components/FilteredImage";
-import Tool from "./components/Tool";
 import FilterSelection from "./components/FilterSelection";
+import Konva from "konva";
 
 function Editor() {
   const [image, imageStatus] = useImage("/src/assets/cube.jpg");
   const viewportRef = useRef<HTMLDivElement>(null);
+  const imageRef = useRef<Konva.Image>(null);
+  const stageRef = useRef<Konva.Stage>(null);
 
   const [viewportDimensions, SetViewportDimensions] = useState({
     width: 0,
@@ -19,6 +19,15 @@ function Editor() {
 
   const [imageScale, setImageScale] = useState(1);
 
+  const handleResize = () => {
+    const width = viewportRef.current?.clientWidth || 0;
+    const height = viewportRef.current?.clientHeight || 0;
+    SetViewportDimensions({
+      width: width,
+      height: height,
+    });
+  };
+
   useEffect(() => {
     const width = viewportRef.current?.clientWidth || 0;
     const height = viewportRef.current?.clientHeight || 0;
@@ -26,11 +35,19 @@ function Editor() {
       width: width,
       height: height,
     });
+    window.addEventListener("resize", handleResize);
 
     if (image)
       setImageScale(
-        Math.min((width - 100) / image?.width, (height - 150) / image?.height)
+        Math.min(
+          (viewportDimensions.width - 100) / image?.width,
+          (viewportDimensions.height - 150) / image?.height
+        )
       );
+
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
   }, [image]);
 
   const handleZoom = (e: KonvaEventObject<WheelEvent>) => {
@@ -64,11 +81,27 @@ function Editor() {
 
     stage.position(newPos);
     stage.batchDraw();
+    // console.log(newScale);
   };
+
+  // function from https://stackoverflow.com/a/15832662/512042
+  function downloadURI(name: string) {
+    const image = imageRef.current?.clone();
+    if (!image) return;
+    image.scale({ x: 1, y: 1 });
+    image.cache();
+
+    var link = document.createElement("a");
+    link.download = name;
+    link.href = image.toDataURL() || "#";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
 
   return (
     <div className="h-screen w-screen bg-slate-300">
-      <header className="fixed top-0 z-10 flex h-14 w-full items-center justify-between bg-slate-100 px-4 drop-shadow-md rounded-b-xl">
+      <header className="fixed top-0 z-10 flex h-14 w-full items-center justify-between rounded-b-xl bg-slate-100 px-4 drop-shadow-md">
         <div className="">
           Dimensions{" "}
           {imageStatus === "loaded" && image && (
@@ -77,13 +110,20 @@ function Editor() {
             </span>
           )}
         </div>
-        <div className="name flex flex-row from-neutral-800 font-semibold items-center">
-          <img src = "/Icon.svg" className="h-10 w-10 mx-2"/>
+        <div className="name flex flex-row items-center from-neutral-800 font-semibold">
+          <img src="/Icon.svg" className="mx-2 h-10 w-10" />
           Image Editor
         </div>
         <div className="share-section">
           <button className="mx-2">Share</button>
-          <button className="mx-2">Download</button>
+          <button
+            className="mx-2"
+            onClick={() => {
+              if (imageRef.current) downloadURI("cubeEdited.jpg");
+            }}
+          >
+            Download
+          </button>
         </div>
       </header>
 
@@ -120,6 +160,7 @@ function Editor() {
                 <FilteredImage
                   image={image}
                   scale={{ x: imageScale, y: imageScale }}
+                  ref={imageRef}
                 />
               </Layer>
             </Stage>
