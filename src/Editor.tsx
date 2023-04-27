@@ -1,18 +1,19 @@
 import type { KonvaEventObject } from "konva/lib/Node";
-import { useEffect, useImperativeHandle, useRef, useState } from "react";
-import { KonvaNodeComponent, Layer, Stage } from "react-konva";
+import { useEffect, useRef, useState } from "react";
+import { Layer, Stage } from "react-konva";
 import { useDispatch } from "react-redux";
 import useImage from "use-image";
-import { applyFilter } from "./features/filter/filterSlice";
-import FilteredImage from "./components/FilteredImage";
-import Tool from "./components/Tool";
-import FilterSelection from "./components/FilterSelection";
-import { stages } from "konva/lib/Stage";
 import Konva from "konva";
+
+import FilteredImage from "./components/FilteredImage";
+import FilterSelection from "./components/FilterSelection";
+import Tool from "./components/Tool";
+import { crop } from "./assets";
 
 function Editor() {
   const [image, imageStatus] = useImage("/src/assets/cube.jpg");
   const viewportRef = useRef<HTMLDivElement>(null);
+  const imageRef = useRef<Konva.Image>(null);
   const stageRef = useRef<Konva.Stage>(null);
 
   const [viewportDimensions, SetViewportDimensions] = useState({
@@ -22,6 +23,15 @@ function Editor() {
 
   const [imageScale, setImageScale] = useState(1);
 
+  const handleResize = () => {
+    const width = viewportRef.current?.clientWidth || 0;
+    const height = viewportRef.current?.clientHeight || 0;
+    SetViewportDimensions({
+      width: width,
+      height: height,
+    });
+  };
+
   useEffect(() => {
     const width = viewportRef.current?.clientWidth || 0;
     const height = viewportRef.current?.clientHeight || 0;
@@ -29,11 +39,19 @@ function Editor() {
       width: width,
       height: height,
     });
+    window.addEventListener("resize", handleResize);
 
     if(image)
       setImageScale(
-        Math.min((width - 100) / image?.width, (height - 150) / image?.height)
+        Math.min(
+          (viewportDimensions.width - 100) / image?.width,
+          (viewportDimensions.height - 150) / image?.height
+        )
       );
+
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
   }, [image]);
 
   const handleZoom = (e: KonvaEventObject<WheelEvent>) => {
@@ -67,33 +85,51 @@ function Editor() {
 
     stage.position(newPos);
     stage.batchDraw();
+    // console.log(newScale);
   };
 
-  const downloadURI = (uri: string | undefined, name: string | undefined) => {
+  // function from https://stackoverflow.com/a/15832662/512042
+  function downloadURI(name: string) {
+    const image = imageRef.current?.clone();
+    if (!image) return;
+    // image.scale({ x: 1, y: 1 });
+    image.cache();
+
     var link = document.createElement("a");
-    link.download = name as string;
-    link.href = uri as string;
+    link.download = name;
+    link.href = image.toDataURL() || "#";
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-  };
+  }
 
-  const handleDownload = () => {
-    const options = {
-      quality: 1,
-      pixelRatio: 1,
-      width: stageRef?.current!.getAbsoluteScale().x * image!.width,
-      height: stageRef?.current!.getAbsoluteScale().y * image!.height,
-      x: stageRef?.current?.getStage().getPosition().x,
-      y: stageRef?.current?.getStage().getPosition().y
-    };
-    const dataURL = stageRef?.current?.toDataURL(options);
-    downloadURI(dataURL,'cube.png');
-  };
+  const handleCrop = () => {
+    
+  }
+
+  function flipHor() {
+    const image = imageRef?.current
+    if(!image)
+      return;
+    image.scaleX(-image.scaleX())
+    image.offsetX(image.getWidth() / 2)
+  }
+
+  function flipVer() {
+    const image = imageRef?.current
+    if(!image)
+      return;
+    image.scaleY(-image.scaleY())
+    image.offsetY(image.getHeight() / 2)
+  }
+
+  // const handleFilter = () => {
+    
+  // }
 
   return (
     <div className="h-screen w-screen bg-slate-300">
-      <header className="fixed top-0 z-10 flex h-14 w-full items-center justify-between bg-slate-100 px-4 drop-shadow-md rounded-b-xl">
+      <header className="fixed top-0 z-10 flex h-14 w-full items-center justify-between rounded-b-xl bg-slate-100 px-4 drop-shadow-md">
         <div className="">
           Dimensions{" "}
           {imageStatus === "loaded" && image && (
@@ -102,30 +138,51 @@ function Editor() {
             </span>
           )}
         </div>
-        <div className="name flex flex-row from-neutral-800 font-semibold items-center">
-          <img src = "/Icon.svg" className="h-10 w-10 mx-2"/>
-          Image Editor
+        <div className="name flex flex-row items-center text-slate-800 font-bold text-[32px]">
+          {/* <img src="/Icon.svg" className="mx-2 h-10 w-10" /> */}
+          SIMPLE IMAGE EDITOR
         </div>
         <div className="share-section">
           <button className="mx-2 rounded-sm bg-slate-500 hover:bg-slate-600 border border-slate-300 px-2 py-2 font-semibold text-slate-200 drop-shadow-lg">Share</button>
           <button
+           
             className="mx-2 rounded-sm bg-slate-500 hover:bg-slate-600 border border-slate-300 px-2 py-2 font-semibold text-slate-200 drop shadow-lg"
-            onClick={handleDownload}
-          >Download</button>
+            onClick={() => {
+              if (imageRef.current) downloadURI("cubeEdited.jpg");
+            }}
+          >
+            Download
+          </button>
         </div>
       </header>
 
       <main className="flex h-full flex-nowrap overflow-hidden shadow-md">
         {/* Toolbar */}
-        {/* <div className="h-full w-2/12 max-w-[100px] shrink-0 bg-slate-100 pt-14"> */}
+        <div className="h-full w-2/12 max-w-[100px] flex flex-col justify-start items-center shrink-0 bg-slate-100 pt-20 gap-2">
+          <Tool toolName="crop" onClick={handleCrop}>
+            Crop
+          </Tool>
+          <Tool toolName="crop" onClick={() => {
+            if(imageRef.current) flipHor();
+          }}>
+            Flip-H
+          </Tool>
+          <Tool toolName="crop" onClick={() => {
+            if(imageRef.current) flipVer();
+          }}>
+            Flip-V
+          </Tool>
+          {/* <Tool toolName="filter" onClick={handleFilter}>
+            Filters
+          </Tool> */}
           {/* <Tool toolName="blur" onClick={handleBlur}>
             Blur
           </Tool>
           <Tool toolName="clear" onClick={handleClear}>
             Clear
-          </Tool> */}
-          {/*<Tool toolName="resize" onClick={handleToolClick}>Resize</Tool> */}
-        {/* </div> */}
+          </Tool>
+          <Tool toolName="resize" onClick={handleToolClick}>Resize</Tool> */}
+        </div>
 
         {/* Workspace */}
         <div
@@ -136,13 +193,15 @@ function Editor() {
             <Stage
               width={viewportDimensions.width}
               height={viewportDimensions.height}
-              x={viewportDimensions.width / 2 - 
-                (image.width * imageScale) / 2}
-              y={
-                viewportDimensions.height / 2 -
-                (image.height * imageScale) / 2 +
-                25
-              }
+              // x={viewportDimensions.width / 2 - 
+              //   (image.width * imageScale) / 2}
+              // y={
+              //   viewportDimensions.height / 2 -
+              //   (image.height * imageScale) / 2 +
+              //   25
+              // }
+              x={viewportDimensions.width / 2}
+              y={viewportDimensions.height / 2 + 25}
               ref = {stageRef}
               onWheel={handleZoom}
             >
@@ -150,6 +209,7 @@ function Editor() {
                 <FilteredImage
                   image={image}
                   scale={{ x: imageScale, y: imageScale }}
+                  ref={imageRef}
                 />
               </Layer>
             </Stage>
