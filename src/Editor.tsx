@@ -41,7 +41,7 @@ function Editor() {
     });
     window.addEventListener("resize", handleResize);
 
-    if(image)
+    if (image)
       setImageScale(
         Math.min(
           (viewportDimensions.width - 100) / image?.width,
@@ -103,28 +103,24 @@ function Editor() {
     document.body.removeChild(link);
   }
 
-  const handleCrop = () => {
-    
-  }
+  const handleCrop = () => {};
 
   function flipHor() {
-    const image = imageRef?.current
-    if(!image)
-      return;
-    image.scaleX(-image.scaleX())
-    image.offsetX(image.getWidth() / 2)
+    const image = imageRef?.current;
+    if (!image) return;
+    image.scaleX(-image.scaleX());
+    image.offsetX(image.getWidth() / 2);
   }
 
   function flipVer() {
-    const image = imageRef?.current
-    if(!image)
-      return;
-    image.scaleY(-image.scaleY())
-    image.offsetY(image.getHeight() / 2)
+    const image = imageRef?.current;
+    if (!image) return;
+    image.scaleY(-image.scaleY());
+    image.offsetY(image.getHeight() / 2);
   }
 
   // const handleFilter = () => {
-    
+
   // }
 
   return (
@@ -138,15 +134,16 @@ function Editor() {
             </span>
           )}
         </div>
-        <div className="name flex flex-row items-center text-slate-800 font-bold text-[32px]">
+        <div className="name flex flex-row items-center text-[32px] font-bold text-slate-800">
           {/* <img src="/Icon.svg" className="mx-2 h-10 w-10" /> */}
           SIMPLE IMAGE EDITOR
         </div>
         <div className="share-section">
-          <button className="mx-2 rounded-sm bg-slate-500 hover:bg-slate-600 border border-slate-300 px-2 py-2 font-semibold text-slate-200 drop-shadow-lg">Share</button>
+          <button className="mx-2 rounded-sm border border-slate-300 bg-slate-500 px-2 py-2 font-semibold text-slate-200 drop-shadow-lg hover:bg-slate-600">
+            Share
+          </button>
           <button
-           
-            className="mx-2 rounded-sm bg-slate-500 hover:bg-slate-600 border border-slate-300 px-2 py-2 font-semibold text-slate-200 drop shadow-lg"
+            className="drop mx-2 rounded-sm border border-slate-300 bg-slate-500 px-2 py-2 font-semibold text-slate-200 shadow-lg hover:bg-slate-600"
             onClick={() => {
               if (imageRef.current) downloadURI("cubeEdited.jpg");
             }}
@@ -158,18 +155,24 @@ function Editor() {
 
       <main className="flex h-full flex-nowrap overflow-hidden shadow-md">
         {/* Toolbar */}
-        <div className="h-full w-2/12 max-w-[100px] flex flex-col justify-start items-center shrink-0 bg-slate-100 pt-20 gap-2">
+        <div className="flex h-full w-2/12 max-w-[100px] shrink-0 flex-col items-center justify-start gap-2 bg-slate-100 pt-16">
           <Tool toolName="crop" onClick={handleCrop}>
             Crop
           </Tool>
-          <Tool toolName="crop" onClick={() => {
-            if(imageRef.current) flipHor();
-          }}>
+          <Tool
+            toolName="crop"
+            onClick={() => {
+              if (imageRef.current) flipHor();
+            }}
+          >
             Flip-H
           </Tool>
-          <Tool toolName="crop" onClick={() => {
-            if(imageRef.current) flipVer();
-          }}>
+          <Tool
+            toolName="crop"
+            onClick={() => {
+              if (imageRef.current) flipVer();
+            }}
+          >
             Flip-V
           </Tool>
           {/* <Tool toolName="filter" onClick={handleFilter}>
@@ -193,7 +196,7 @@ function Editor() {
             <Stage
               width={viewportDimensions.width}
               height={viewportDimensions.height}
-              // x={viewportDimensions.width / 2 - 
+              // x={viewportDimensions.width / 2 -
               //   (image.width * imageScale) / 2}
               // y={
               //   viewportDimensions.height / 2 -
@@ -202,7 +205,7 @@ function Editor() {
               // }
               x={viewportDimensions.width / 2}
               y={viewportDimensions.height / 2 + 25}
-              ref = {stageRef}
+              ref={stageRef}
               onWheel={handleZoom}
             >
               <Layer>
@@ -217,7 +220,7 @@ function Editor() {
         </div>
 
         {/* Details */}
-        <div className="h-full w-3/12 shrink-0 bg-slate-100 pt-14 shadow-md">
+        <div className="h-screen w-3/12 shrink-0 overflow-scroll bg-slate-100 py-16 shadow-md">
           <FilterSelection />
         </div>
       </main>
