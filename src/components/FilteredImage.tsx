@@ -53,6 +53,8 @@ const FilteredImage = forwardRef<Konva.Image, FilteredImageProps>(
         height={image.height}
         {...filter.value}
         scale={scale}
+        offsetX={image.width / 2}
+        offsetY={image.height / 2}
         ref={safeRef}
         draggable
       />

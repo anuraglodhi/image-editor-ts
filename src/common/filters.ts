@@ -17,13 +17,12 @@ const Filters = {
   },
   fade: {
     filters: [
-
       Konva.Filters.HSL,
       Konva.Filters.Contrast
     ],
-    contrast: 15,
-    luminance: 0.45,
-    saturation:-0.25,
+    contrast: -5,
+    luminance: 0.25,
+    saturation:-0.45,
   },
   mono: {
     filters: [

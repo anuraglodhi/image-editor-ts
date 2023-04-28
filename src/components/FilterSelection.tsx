@@ -25,7 +25,7 @@ const FilterButton = ({ name }: FilterButtonProps) => {
 
 const FilterSelection = () => {
   return (
-    <div className="flex flex-wrap gap-2 p-4 justify-between">
+    <div className="flex flex-wrap gap-2 p-4 justify-around">
       {filters.map((filterName) => {
         return <FilterButton name={filterName} key={filterName} />;
       })}

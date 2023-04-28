@@ -12,7 +12,7 @@ const Tool = ({
   return (
     <>
       <button
-        className="h-16 w-full border-b-2 hover:bg-slate-200 active:bg-slate-300"
+        className="h-16 w-[95%] flex flex-col justify-center items-center rounded-sm border-b-2 border-slate-500 font-semibold text-slate-600 text-[24px] bg-slate-200 hover:bg-slate-400 active:bg-slate-500"
         onClick={() => onClick(toolName)}
       >
         {children}

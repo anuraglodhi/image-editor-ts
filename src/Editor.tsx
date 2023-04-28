@@ -1,10 +1,14 @@
 import type { KonvaEventObject } from "konva/lib/Node";
 import { useEffect, useRef, useState } from "react";
 import { Layer, Stage } from "react-konva";
+import { useDispatch } from "react-redux";
 import useImage from "use-image";
+import Konva from "konva";
+
 import FilteredImage from "./components/FilteredImage";
 import FilterSelection from "./components/FilterSelection";
-import Konva from "konva";
+import Tool from "./components/Tool";
+import { crop } from "./assets";
 
 function Editor() {
   const [image, imageStatus] = useImage("/src/assets/cube.jpg");
@@ -37,7 +41,7 @@ function Editor() {
     });
     window.addEventListener("resize", handleResize);
 
-    if (image)
+    if(image)
       setImageScale(
         Math.min(
           (viewportDimensions.width - 100) / image?.width,
@@ -88,7 +92,7 @@ function Editor() {
   function downloadURI(name: string) {
     const image = imageRef.current?.clone();
     if (!image) return;
-    image.scale({ x: 1, y: 1 });
+    // image.scale({ x: 1, y: 1 });
     image.cache();
 
     var link = document.createElement("a");
@@ -98,6 +102,30 @@ function Editor() {
     link.click();
     document.body.removeChild(link);
   }
+
+  const handleCrop = () => {
+    
+  }
+
+  function flipHor() {
+    const image = imageRef?.current
+    if(!image)
+      return;
+    image.scaleX(-image.scaleX())
+    image.offsetX(image.getWidth() / 2)
+  }
+
+  function flipVer() {
+    const image = imageRef?.current
+    if(!image)
+      return;
+    image.scaleY(-image.scaleY())
+    image.offsetY(image.getHeight() / 2)
+  }
+
+  // const handleFilter = () => {
+    
+  // }
 
   return (
     <div className="h-screen w-screen bg-slate-300">
@@ -110,14 +138,15 @@ function Editor() {
             </span>
           )}
         </div>
-        <div className="name flex flex-row items-center from-neutral-800 font-semibold">
-          <img src="/Icon.svg" className="mx-2 h-10 w-10" />
-          Image Editor
+        <div className="name flex flex-row items-center text-slate-800 font-bold text-[32px]">
+          {/* <img src="/Icon.svg" className="mx-2 h-10 w-10" /> */}
+          SIMPLE IMAGE EDITOR
         </div>
         <div className="share-section">
-          <button className="mx-2">Share</button>
+          <button className="mx-2 rounded-sm bg-slate-500 hover:bg-slate-600 border border-slate-300 px-2 py-2 font-semibold text-slate-200 drop-shadow-lg">Share</button>
           <button
-            className="mx-2"
+           
+            className="mx-2 rounded-sm bg-slate-500 hover:bg-slate-600 border border-slate-300 px-2 py-2 font-semibold text-slate-200 drop shadow-lg"
             onClick={() => {
               if (imageRef.current) downloadURI("cubeEdited.jpg");
             }}
@@ -129,14 +158,30 @@ function Editor() {
 
       <main className="flex h-full flex-nowrap overflow-hidden shadow-md">
         {/* Toolbar */}
-        <div className="h-full w-2/12 max-w-[100px] shrink-0 bg-slate-100 pt-14">
+        <div className="h-full w-2/12 max-w-[100px] flex flex-col justify-start items-center shrink-0 bg-slate-100 pt-20 gap-2">
+          <Tool toolName="crop" onClick={handleCrop}>
+            Crop
+          </Tool>
+          <Tool toolName="crop" onClick={() => {
+            if(imageRef.current) flipHor();
+          }}>
+            Flip-H
+          </Tool>
+          <Tool toolName="crop" onClick={() => {
+            if(imageRef.current) flipVer();
+          }}>
+            Flip-V
+          </Tool>
+          {/* <Tool toolName="filter" onClick={handleFilter}>
+            Filters
+          </Tool> */}
           {/* <Tool toolName="blur" onClick={handleBlur}>
             Blur
           </Tool>
           <Tool toolName="clear" onClick={handleClear}>
             Clear
-          </Tool> */}
-          {/*<Tool toolName="resize" onClick={handleToolClick}>Resize</Tool> */}
+          </Tool>
+          <Tool toolName="resize" onClick={handleToolClick}>Resize</Tool> */}
         </div>
 
         {/* Workspace */}
@@ -148,12 +193,16 @@ function Editor() {
             <Stage
               width={viewportDimensions.width}
               height={viewportDimensions.height}
-              x={viewportDimensions.width / 2 - (image.width * imageScale) / 2}
-              y={
-                viewportDimensions.height / 2 -
-                (image.height * imageScale) / 2 +
-                25
-              }
+              // x={viewportDimensions.width / 2 - 
+              //   (image.width * imageScale) / 2}
+              // y={
+              //   viewportDimensions.height / 2 -
+              //   (image.height * imageScale) / 2 +
+              //   25
+              // }
+              x={viewportDimensions.width / 2}
+              y={viewportDimensions.height / 2 + 25}
+              ref = {stageRef}
               onWheel={handleZoom}
             >
               <Layer>
