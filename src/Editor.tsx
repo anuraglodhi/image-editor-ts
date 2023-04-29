@@ -232,7 +232,7 @@ function Editor() {
         </div>
 
         {/* Details */}
-        <div className="h-screen w-3/12 shrink-0 overflow-y-scroll bg-slate-100 pt-16 pb-2 shadow-md">
+        <div className="h-screen w-3/12 shrink-0 overflow-y-scroll bg-slate-100 dark:bg-slate-900 pt-16 pb-2 shadow-md">
           <FilterSelection />
         </div>
       </main>

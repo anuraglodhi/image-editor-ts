@@ -11,7 +11,7 @@ const FilterButton = ({ name }: FilterButtonProps) => {
   const dispatch = useDispatch();
   return (
     <button
-      className="text-md aspect-square w-full rounded-sm bg-slate-500 font-semibold capitalize text-slate-200 md:text-2xl"
+      className="text-md aspect-square w-full rounded-sm border-b-2 border-slate-500 dark:border-slate-200 bg-slate-500 dark:bg-slate-800 font-semibold capitalize text-slate-600 dark:text-slate-200 hover:bg-slate-400 dark:hover:bg-slate-700 active:bg-slate-500 md:text-2xl"
       onClick={() => {
         dispatch(applyFilter(name));
       }}
