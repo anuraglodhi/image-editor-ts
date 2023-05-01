@@ -33,8 +33,20 @@ const Share = () => {
         Simple Image Editor
       </header>
       <main>
-        <section className="h-[200px] bg-slate-100">
-          <input type="file" onChange={handleUpload} />
+        <section className="flex h-[400px] items-center justify-center bg-slate-100">
+          <label
+            htmlFor="file-input"
+            className="flex h-16 w-48 items-center justify-center rounded-lg border bg-slate-300 hover:bg-slate-400 active:bg-slate-500"
+          >
+            Select Image
+          </label>
+          <input
+            type="file"
+            id="file-input"
+            accept="image/*"
+            onChange={handleUpload}
+            className="hidden"
+          />
         </section>
         <section className="flex flex-col items-center p-4">
           <div className="max-w-screen-lg">
