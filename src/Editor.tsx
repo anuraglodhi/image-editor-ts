@@ -1,6 +1,6 @@
 import type { KonvaEventObject } from "konva/lib/Node";
 import { useEffect, useRef, useState } from "react";
-import { Layer, Stage } from "react-konva";
+import { Layer, Stage, Transformer } from "react-konva";
 import { useDispatch } from "react-redux";
 import useImage from "use-image";
 import Konva from "konva";
@@ -14,6 +14,7 @@ import { useSelector } from "react-redux";
 function Editor() {
   const imageURL = useSelector((state: any) => state.image.value);
   const [image, imageStatus] = useImage(imageURL);
+
   const viewportRef = useRef<HTMLDivElement>(null);
   const imageRef = useRef<Konva.Image>(null);
   const stageRef = useRef<Konva.Stage>(null);
@@ -43,7 +44,7 @@ function Editor() {
     });
     window.addEventListener("resize", handleResize);
 
-    if (image)
+    if(image)
       setImageScale(
         Math.min(
           (viewportDimensions.width - 100) / image?.width,
@@ -125,27 +126,31 @@ function Editor() {
 
   // }
 
+  const handleRotate = () => {
+
+  }
+
   return (
-    <div className="h-screen w-screen bg-slate-300">
-      <header className="fixed top-0 z-10 flex h-14 w-full items-center justify-between rounded-b-xl bg-slate-100 px-4 drop-shadow-md">
-        <div className="">
+    <div className="h-screen w-screen bg-slate-300 dark:bg-slate-700">
+      <header className="fixed top-0 z-10 flex h-14 w-full items-center justify-between rounded-b-xl bg-slate-100 dark:bg-slate-900 px-4 shadow-slate-100 dark:shadow-slate-100 drop-shadow-md">
+        <div className="text-slate-800 dark:text-slate-200">
           Dimensions{" "}
           {imageStatus === "loaded" && image && (
-            <span className="inline-block rounded-md border border-slate-800 px-2 py-1 text-sm">
+            <span className="inline-block rounded-md border border-slate-800 dark:border-slate-200 text-slate-800 dark:text-slate-200 px-2 py-1 text-sm">
               {image.width} x {image.height}
             </span>
           )}
         </div>
-        <div className="name flex flex-row items-center text-[32px] font-bold text-slate-800">
+        <div className="name flex flex-row items-center text-[32px] font-bold text-slate-800 dark:text-slate-200 ">
           {/* <img src="/Icon.svg" className="mx-2 h-10 w-10" /> */}
           SIMPLE IMAGE EDITOR
         </div>
         <div className="share-section">
-          <button className="mx-2 rounded-sm border border-slate-300 bg-slate-500 px-2 py-2 font-semibold text-slate-200 drop-shadow-lg hover:bg-slate-600">
+          <button className="mx-2 rounded-sm border border-slate-200 dark: bg-slate-500 dark:bg-slate-100 px-2 py-2 font-semibold text-slate-200 dark:text-slate-800 drop-shadow-lg hover:bg-slate-200">
             Share
           </button>
           <button
-            className="drop mx-2 rounded-sm border border-slate-300 bg-slate-500 px-2 py-2 font-semibold text-slate-200 shadow-lg hover:bg-slate-600"
+            className="drop mx-2 rounded-sm border border-slate-200 dark:border-slate-50 bg-slate-500 dark:bg-slate-100 px-2 py-2 font-semibold text-slate-200 dark:text-slate-800 shadow-lg hover:bg-slate-200"
             onClick={() => {
               if (imageRef.current) downloadURI("cubeEdited.jpg");
             }}
@@ -157,12 +162,12 @@ function Editor() {
 
       <main className="flex h-full flex-nowrap overflow-hidden shadow-md">
         {/* Toolbar */}
-        <div className="flex h-full w-2/12 max-w-[100px] shrink-0 flex-col items-center justify-start gap-2 bg-slate-100 pt-16">
+        <div className="flex h-full w-2/12 max-w-[100px] shrink-0 flex-col items-center justify-start gap-2 bg-slate-100 dark:bg-slate-900 pt-16">
           <Tool toolName="crop" onClick={handleCrop}>
             Crop
           </Tool>
           <Tool
-            toolName="crop"
+            toolName="flipH"
             onClick={() => {
               if (imageRef.current) flipHor();
             }}
@@ -170,12 +175,20 @@ function Editor() {
             Flip-H
           </Tool>
           <Tool
-            toolName="crop"
+            toolName="flipV"
             onClick={() => {
               if (imageRef.current) flipVer();
             }}
           >
             Flip-V
+          </Tool>
+          <Tool
+            toolName="crop"
+            onClick={() => {
+              if (imageRef.current) handleRotate();
+            }}
+          >
+            Rotate
           </Tool>
           {/* <Tool toolName="filter" onClick={handleFilter}>
             Filters
@@ -222,7 +235,7 @@ function Editor() {
         </div>
 
         {/* Details */}
-        <div className="h-screen w-3/12 shrink-0 overflow-scroll bg-slate-100 py-16 shadow-md">
+        <div className="h-screen w-3/12 shrink-0 overflow-y-scroll bg-slate-100 dark:bg-slate-900 pt-16 pb-2 shadow-md">
           <FilterSelection />
         </div>
       </main>
