@@ -4,10 +4,11 @@ import test from "/src/assets/test.jpg";
 import { useDispatch } from "react-redux";
 import { setImage } from "./features/image/imageSlice";
 import { useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 
 const Share = () => {
   const dispatch = useDispatch();
-  const image = useSelector((state: any) => state.image);
+  const navigate = useNavigate();
 
   const handleUpload = (e: FormEvent) => {
     const input = e.target as HTMLInputElement;
@@ -23,6 +24,7 @@ const Share = () => {
       )}`;
       dispatch(setImage(url));
     };
+    navigate("/editor");
   };
 
   return (

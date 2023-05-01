@@ -9,9 +9,11 @@ import FilteredImage from "./components/FilteredImage";
 import FilterSelection from "./components/FilterSelection";
 import Tool from "./components/Tool";
 import { crop } from "./assets";
+import { useSelector } from "react-redux";
 
 function Editor() {
-  const [image, imageStatus] = useImage("/src/assets/cube.jpg");
+  const imageURL = useSelector((state: any) => state.image.value);
+  const [image, imageStatus] = useImage(imageURL);
   const viewportRef = useRef<HTMLDivElement>(null);
   const imageRef = useRef<Konva.Image>(null);
   const stageRef = useRef<Konva.Stage>(null);
