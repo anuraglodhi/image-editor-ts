@@ -141,16 +141,16 @@ function Editor() {
             </span>
           )}
         </div>
-        <div className="name flex flex-row items-center text-[32px] font-bold text-slate-800 dark:text-slate-200 ">
+        <div className="flex flex-row items-center text-[32px] font-bold text-slate-800 dark:text-slate-200 ">
           {/* <img src="/Icon.svg" className="mx-2 h-10 w-10" /> */}
           SIMPLE IMAGE EDITOR
         </div>
         <div className="share-section">
-          <button className="mx-2 rounded-sm border border-slate-200 dark: bg-slate-500 dark:bg-slate-100 px-2 py-2 font-semibold text-slate-200 dark:text-slate-800 drop-shadow-lg hover:bg-slate-200">
+          <button className="mx-2 rounded-sm border border-slate-200 bg-slate-500 dark:bg-slate-100 px-2 py-2 font-semibold text-slate-200 dark:text-slate-800 drop-shadow-lg hover:bg-slate-600 dark:hover:bg-slate-300">
             Share
           </button>
           <button
-            className="drop mx-2 rounded-sm border border-slate-200 dark:border-slate-50 bg-slate-500 dark:bg-slate-100 px-2 py-2 font-semibold text-slate-200 dark:text-slate-800 shadow-lg hover:bg-slate-200"
+            className="drop mx-2 rounded-sm border border-slate-200 dark:border-slate-50 bg-slate-500 dark:bg-slate-100 px-2 py-2 font-semibold text-slate-200 dark:text-slate-800 shadow-lg hover:bg-slate-600 dark:hover:bg-slate-300"
             onClick={() => {
               if (imageRef.current) downloadURI("cubeEdited.jpg");
             }}
