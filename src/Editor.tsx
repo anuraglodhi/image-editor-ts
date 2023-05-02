@@ -8,7 +8,7 @@ import Konva from "konva";
 import FilteredImage from "./components/FilteredImage";
 import FilterSelection from "./components/FilterSelection";
 import Tool from "./components/Tool";
-import { crop } from "./assets";
+import { crop, flipX, flipY, rotate, filter } from "./assets";
 import { useSelector } from "react-redux";
 
 function Editor() {
@@ -18,6 +18,9 @@ function Editor() {
   const viewportRef = useRef<HTMLDivElement>(null);
   const imageRef = useRef<Konva.Image>(null);
   const stageRef = useRef<Konva.Stage>(null);
+
+  const [flippedX, setFlippedX] = useState(false);
+  const [flippedY, setFlippedY] = useState(false);
 
   const [viewportDimensions, SetViewportDimensions] = useState({
     width: 0,
@@ -95,7 +98,13 @@ function Editor() {
   function downloadURI(name: string) {
     const image = imageRef.current?.clone();
     if (!image) return;
-    // image.scale({ x: 1, y: 1 });
+    if(flippedX) {
+      image.scale({x: -1, y: 1});
+    } else if(flippedY) {
+      image.scale({x: 1, y: -1});
+    } else {
+      image.scale({ x: 1, y: 1 });
+    }
     image.cache();
 
     var link = document.createElement("a");
@@ -108,16 +117,18 @@ function Editor() {
 
   const handleCrop = () => {};
 
-  function flipHor() {
+  function flip_x() {
     const image = imageRef?.current;
     if (!image) return;
+    setFlippedX(!flippedX);
     image.scaleX(-image.scaleX());
     image.offsetX(image.getWidth() / 2);
   }
 
-  function flipVer() {
+  function flip_y() {
     const image = imageRef?.current;
     if (!image) return;
+    setFlippedY(!flippedY);
     image.scaleY(-image.scaleY());
     image.offsetY(image.getHeight() / 2);
   }
@@ -163,36 +174,44 @@ function Editor() {
       <main className="flex h-full flex-nowrap overflow-hidden shadow-md">
         {/* Toolbar */}
         <div className="flex h-full w-2/12 max-w-[100px] shrink-0 flex-col items-center justify-start gap-2 bg-slate-100 dark:bg-slate-900 pt-16">
-          <Tool toolName="crop" onClick={handleCrop}>
+          <Tool
+            toolName="crop"
+            icon={crop}
+            onClick={handleCrop}>
             Crop
           </Tool>
           <Tool
-            toolName="flipH"
+            toolName="flipX"
+            icon={flipX}
             onClick={() => {
-              if (imageRef.current) flipHor();
+              if (imageRef.current) flip_x();
             }}
           >
-            Flip-H
+            Flip X
           </Tool>
           <Tool
-            toolName="flipV"
+            toolName="flipY"
+            icon={flipY}
             onClick={() => {
-              if (imageRef.current) flipVer();
+              if (imageRef.current) flip_y();
             }}
           >
-            Flip-V
+            Flip Y
           </Tool>
           <Tool
-            toolName="crop"
+            toolName="rotate"
+            icon={rotate}
             onClick={() => {
               if (imageRef.current) handleRotate();
             }}
           >
             Rotate
           </Tool>
-          {/* <Tool toolName="filter" onClick={handleFilter}>
+          <Tool toolName="filter" 
+            icon={filter}
+            onClick={()=>{}}>
             Filters
-          </Tool> */}
+          </Tool>
           {/* <Tool toolName="blur" onClick={handleBlur}>
             Blur
           </Tool>
