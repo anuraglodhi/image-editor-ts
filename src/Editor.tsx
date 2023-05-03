@@ -8,7 +8,7 @@ import Konva from "konva";
 import FilteredImage from "./components/FilteredImage";
 import FilterSelection from "./components/FilterSelection";
 import Tool from "./components/Tool";
-import { crop } from "./assets";
+import { crop, flipX, flipY, rotate, filter, transform } from "./assets";
 import { useSelector } from "react-redux";
 
 function Editor() {
@@ -18,6 +18,10 @@ function Editor() {
   const viewportRef = useRef<HTMLDivElement>(null);
   const imageRef = useRef<Konva.Image>(null);
   const stageRef = useRef<Konva.Stage>(null);
+  const layerRef = useRef<Konva.Layer>(null);
+
+  const [flippedX, setFlippedX] = useState(false);
+  const [flippedY, setFlippedY] = useState(false);
 
   const [viewportDimensions, SetViewportDimensions] = useState({
     width: 0,
@@ -95,7 +99,13 @@ function Editor() {
   function downloadURI(name: string) {
     const image = imageRef.current?.clone();
     if (!image) return;
-    // image.scale({ x: 1, y: 1 });
+    if(flippedX) {
+      image.scale({x: -1, y: 1});
+    } else if(flippedY) {
+      image.scale({x: 1, y: -1});
+    } else {
+      image.scale({ x: 1, y: 1 });
+    }
     image.cache();
 
     var link = document.createElement("a");
@@ -106,18 +116,24 @@ function Editor() {
     document.body.removeChild(link);
   }
 
-  const handleCrop = () => {};
+  const handleCrop = () => {
+    // to-do add crop functionality
+    
+  };
 
-  function flipHor() {
+  function handleFlipX() {
     const image = imageRef?.current;
     if (!image) return;
+
+    setFlippedX(true);
     image.scaleX(-image.scaleX());
     image.offsetX(image.getWidth() / 2);
   }
 
-  function flipVer() {
+  function handleFlipY() {
     const image = imageRef?.current;
     if (!image) return;
+    setFlippedY(!flippedY);
     image.scaleY(-image.scaleY());
     image.offsetY(image.getHeight() / 2);
   }
@@ -127,7 +143,62 @@ function Editor() {
   // }
 
   const handleRotate = () => {
+    // rotate the image on stage by 90 degree
+    const image = imageRef?.current;
+    if (!image) return;
+    image.rotate(90);
+  }
 
+  const handleTransform = () => {
+    // add a konva transformer to image and remove after use
+    const image = imageRef?.current;
+    if (!image) return;
+
+    const stage = stageRef?.current;
+    if (!stage) return;
+
+    const tr = new Konva.Transformer();
+    tr.rotationSnaps([0, 45, 90, 135, 180, 225, 270]);
+    layerRef?.current?.add(tr);
+    tr.nodes([image]);
+    stage.batchDraw();
+
+    const handleStageMouseDown = (e: KonvaEventObject<MouseEvent>) => {
+      // clicked on stage - clear selection
+      if (e.target === stage) {
+        tr.detach();
+        stage.batchDraw();
+        return;
+      }
+      // clicked on image - do nothing
+      if (e.target === image) {
+        return;
+      }
+
+      // clicked on transformer - do nothing
+      const clickedOnTransformer =
+        e.target.getParent().className === "Transformer";
+      if (clickedOnTransformer) {
+        return;
+      }
+
+      // find clicked rect by its name
+      const name = e.target.name();
+      const rect = imageRef?.current;
+      if (!rect) return;
+
+      const isSelected = name === image.name();
+      if (isSelected) {
+        tr.detach();
+        stage.batchDraw();
+        return;
+      }
+
+      tr.attachTo(rect);
+      stage.batchDraw();
+    };
+
+    stage.on("mousedown", handleStageMouseDown);
   }
 
   return (
@@ -141,16 +212,16 @@ function Editor() {
             </span>
           )}
         </div>
-        <div className="name flex flex-row items-center text-[32px] font-bold text-slate-800 dark:text-slate-200 ">
+        <div className="flex flex-row items-center text-[32px] font-bold text-slate-800 dark:text-slate-200 ">
           {/* <img src="/Icon.svg" className="mx-2 h-10 w-10" /> */}
           SIMPLE IMAGE EDITOR
         </div>
         <div className="share-section">
-          <button className="mx-2 rounded-sm border border-slate-200 dark: bg-slate-500 dark:bg-slate-100 px-2 py-2 font-semibold text-slate-200 dark:text-slate-800 drop-shadow-lg hover:bg-slate-200">
+          <button className="mx-2 rounded-sm border border-slate-200 bg-slate-500 dark:bg-slate-100 px-2 py-2 font-semibold text-slate-200 dark:text-slate-800 drop-shadow-lg hover:bg-slate-600 dark:hover:bg-slate-300">
             Share
           </button>
           <button
-            className="drop mx-2 rounded-sm border border-slate-200 dark:border-slate-50 bg-slate-500 dark:bg-slate-100 px-2 py-2 font-semibold text-slate-200 dark:text-slate-800 shadow-lg hover:bg-slate-200"
+            className="drop mx-2 rounded-sm border border-slate-200 dark:border-slate-50 bg-slate-500 dark:bg-slate-100 px-2 py-2 font-semibold text-slate-200 dark:text-slate-800 shadow-lg hover:bg-slate-600 dark:hover:bg-slate-300"
             onClick={() => {
               if (imageRef.current) downloadURI("cubeEdited.jpg");
             }}
@@ -163,36 +234,49 @@ function Editor() {
       <main className="flex h-full flex-nowrap overflow-hidden shadow-md">
         {/* Toolbar */}
         <div className="flex h-full w-2/12 max-w-[100px] shrink-0 flex-col items-center justify-start gap-2 bg-slate-100 dark:bg-slate-900 pt-16">
-          <Tool toolName="crop" onClick={handleCrop}>
+          <Tool
+            toolName="crop"
+            icon={crop}
+            onClick={handleCrop}>
             Crop
           </Tool>
           <Tool
-            toolName="flipH"
+            toolName="flipX"
+            icon={flipX}
             onClick={() => {
-              if (imageRef.current) flipHor();
+              if (imageRef.current) handleFlipX();
             }}
           >
-            Flip-H
+            Flip X
           </Tool>
           <Tool
-            toolName="flipV"
+            toolName="flipY"
+            icon={flipY}
             onClick={() => {
-              if (imageRef.current) flipVer();
+              if (imageRef.current) handleFlipY();
             }}
           >
-            Flip-V
+            Flip Y
           </Tool>
           <Tool
-            toolName="crop"
+            toolName="rotate"
+            icon={rotate}
             onClick={() => {
               if (imageRef.current) handleRotate();
             }}
           >
             Rotate
           </Tool>
-          {/* <Tool toolName="filter" onClick={handleFilter}>
+          <Tool toolName="filter" 
+            icon={filter}
+            onClick={()=>{}}>
             Filters
-          </Tool> */}
+          </Tool>
+          <Tool toolName="transform" 
+            icon={transform}
+            onClick={handleTransform}>
+            Transform
+          </Tool>
           {/* <Tool toolName="blur" onClick={handleBlur}>
             Blur
           </Tool>
@@ -223,7 +307,9 @@ function Editor() {
               ref={stageRef}
               onWheel={handleZoom}
             >
-              <Layer>
+              <Layer
+                ref={layerRef}
+              >
                 <FilteredImage
                   image={image}
                   scale={{ x: imageScale, y: imageScale }}
