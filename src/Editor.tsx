@@ -8,7 +8,7 @@ import Konva from "konva";
 import FilteredImage from "./components/FilteredImage";
 import FilterSelection from "./components/FilterSelection";
 import Tool from "./components/Tool";
-import { crop, flipX, flipY, rotate, filter } from "./assets";
+import { crop, flipX, flipY, rotate, filter, transform } from "./assets";
 import { useSelector } from "react-redux";
 
 function Editor() {
@@ -18,6 +18,7 @@ function Editor() {
   const viewportRef = useRef<HTMLDivElement>(null);
   const imageRef = useRef<Konva.Image>(null);
   const stageRef = useRef<Konva.Stage>(null);
+  const layerRef = useRef<Konva.Layer>(null);
 
   const [flippedX, setFlippedX] = useState(false);
   const [flippedY, setFlippedY] = useState(false);
@@ -115,17 +116,21 @@ function Editor() {
     document.body.removeChild(link);
   }
 
-  const handleCrop = () => {};
+  const handleCrop = () => {
+    // to-do add crop functionality
+    
+  };
 
-  function flip_x() {
+  function handleFlipX() {
     const image = imageRef?.current;
     if (!image) return;
-    setFlippedX(!flippedX);
+
+    setFlippedX(true);
     image.scaleX(-image.scaleX());
     image.offsetX(image.getWidth() / 2);
   }
 
-  function flip_y() {
+  function handleFlipY() {
     const image = imageRef?.current;
     if (!image) return;
     setFlippedY(!flippedY);
@@ -138,7 +143,62 @@ function Editor() {
   // }
 
   const handleRotate = () => {
+    // rotate the image on stage by 90 degree
+    const image = imageRef?.current;
+    if (!image) return;
+    image.rotate(90);
+  }
 
+  const handleTransform = () => {
+    // add a konva transformer to image and remove after use
+    const image = imageRef?.current;
+    if (!image) return;
+
+    const stage = stageRef?.current;
+    if (!stage) return;
+
+    const tr = new Konva.Transformer();
+    tr.rotationSnaps([0, 45, 90, 135, 180, 225, 270]);
+    layerRef?.current?.add(tr);
+    tr.nodes([image]);
+    stage.batchDraw();
+
+    const handleStageMouseDown = (e: KonvaEventObject<MouseEvent>) => {
+      // clicked on stage - clear selection
+      if (e.target === stage) {
+        tr.detach();
+        stage.batchDraw();
+        return;
+      }
+      // clicked on image - do nothing
+      if (e.target === image) {
+        return;
+      }
+
+      // clicked on transformer - do nothing
+      const clickedOnTransformer =
+        e.target.getParent().className === "Transformer";
+      if (clickedOnTransformer) {
+        return;
+      }
+
+      // find clicked rect by its name
+      const name = e.target.name();
+      const rect = imageRef?.current;
+      if (!rect) return;
+
+      const isSelected = name === image.name();
+      if (isSelected) {
+        tr.detach();
+        stage.batchDraw();
+        return;
+      }
+
+      tr.attachTo(rect);
+      stage.batchDraw();
+    };
+
+    stage.on("mousedown", handleStageMouseDown);
   }
 
   return (
@@ -184,7 +244,7 @@ function Editor() {
             toolName="flipX"
             icon={flipX}
             onClick={() => {
-              if (imageRef.current) flip_x();
+              if (imageRef.current) handleFlipX();
             }}
           >
             Flip X
@@ -193,7 +253,7 @@ function Editor() {
             toolName="flipY"
             icon={flipY}
             onClick={() => {
-              if (imageRef.current) flip_y();
+              if (imageRef.current) handleFlipY();
             }}
           >
             Flip Y
@@ -211,6 +271,11 @@ function Editor() {
             icon={filter}
             onClick={()=>{}}>
             Filters
+          </Tool>
+          <Tool toolName="transform" 
+            icon={transform}
+            onClick={handleTransform}>
+            Transform
           </Tool>
           {/* <Tool toolName="blur" onClick={handleBlur}>
             Blur
@@ -242,7 +307,9 @@ function Editor() {
               ref={stageRef}
               onWheel={handleZoom}
             >
-              <Layer>
+              <Layer
+                ref={layerRef}
+              >
                 <FilteredImage
                   image={image}
                   scale={{ x: imageScale, y: imageScale }}
