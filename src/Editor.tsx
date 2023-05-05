@@ -8,7 +8,7 @@ import Konva from "konva";
 import FilteredImage from "./components/FilteredImage";
 import FilterSelection from "./components/FilterSelection";
 import Tool from "./components/Tool";
-import { crop, flipX, flipY, rotate, filter, transform } from "./assets";
+import { crop, flipX, flipY, rotate, filter, transform, adjust } from "./assets";
 import { useSelector } from "react-redux";
 
 function Editor() {
@@ -22,6 +22,8 @@ function Editor() {
 
   const [flippedX, setFlippedX] = useState(false);
   const [flippedY, setFlippedY] = useState(false);
+
+  const [showFilerSelection, setShowFilterSelection] = useState(false);
 
   const [viewportDimensions, SetViewportDimensions] = useState({
     width: 0,
@@ -139,8 +141,9 @@ function Editor() {
   };
 
   const handleCrop = () => {
-    // to-do add crop functionality
-  };
+    
+  }
+
 
   function handleFlipX() {
     const image = imageRef?.current;
@@ -160,10 +163,6 @@ function Editor() {
     setFlippedY(!flippedY);
   }
 
-  // const handleFilter = () => {
-
-  // }
-
   const handleRotate = () => {
     // rotate the image on stage by 90 degree
     const image = imageRef?.current;
@@ -172,7 +171,6 @@ function Editor() {
   };
 
   const handleTransform = () => {
-    // add a konva transformer to image and remove after use
     const image = imageRef?.current;
     if (!image) return;
 
@@ -186,25 +184,25 @@ function Editor() {
     stage.batchDraw();
 
     const handleStageMouseDown = (e: KonvaEventObject<MouseEvent>) => {
-      // clicked on stage - clear selection
+
       if (e.target === stage) {
         tr.detach();
         stage.batchDraw();
         return;
       }
-      // clicked on image - do nothing
+
       if (e.target === image) {
         return;
       }
 
-      // clicked on transformer - do nothing
+
       const clickedOnTransformer =
         e.target.getParent().className === "Transformer";
       if (clickedOnTransformer) {
         return;
       }
 
-      // find clicked rect by its name
+
       const name = e.target.name();
       const rect = imageRef?.current;
       if (!rect) return;
@@ -289,7 +287,9 @@ function Editor() {
           >
             Rotate
           </Tool>
-          <Tool toolName="filter" icon={filter} onClick={() => {}}>
+          <Tool toolName="filter" 
+            icon={filter}
+            onClick={() => setShowFilterSelection(!showFilerSelection)}>
             Filters
           </Tool>
           <Tool toolName="transform" icon={transform} onClick={handleTransform}>
@@ -337,9 +337,12 @@ function Editor() {
         </div>
 
         {/* Details */}
-        <div className="h-screen w-3/12 shrink-0 overflow-y-scroll bg-slate-100 pb-2 pt-16 shadow-md dark:bg-slate-900">
-          <FilterSelection />
+        <div className={`h-screen w-3/12 shrink-0 bg-slate-100 dark:bg-slate-900 pt-16 pb-2 shadow-md`}>
+          <div className={`${!showFilerSelection ? "hidden": ""} h-full w-full overflow-y-scroll bg-inherit`}>
+            <FilterSelection />
+          </div>
         </div>
+
       </main>
     </div>
   );
