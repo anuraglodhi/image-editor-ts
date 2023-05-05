@@ -64,7 +64,7 @@ const Share = () => {
             <h2 className="w-full pb-2 text-2xl font-bold text-slate-800 dark:text-slate-200">
               See what others have done
             </h2>
-            <div className="columns-3 gap-4">
+            <div className="columns-1 gap-4 md:columns-2 lg:columns-3">
               {posts &&
                 posts.map((post: any) => {
                   return (
