@@ -30,7 +30,7 @@ function Editor() {
     height: 0,
   });
 
-  const [imageScale, setImageScale] = useState(1);
+  const [imageScale, setImageScale] = useState({ x: 1, y: 1 });
 
   const handleResize = () => {
     const width = viewportRef.current?.clientWidth || 0;
@@ -50,13 +50,13 @@ function Editor() {
     });
     window.addEventListener("resize", handleResize);
 
-    if(image)
-      setImageScale(
-        Math.min(
-          (viewportDimensions.width - 100) / image?.width,
-          (viewportDimensions.height - 150) / image?.height
-        )
+    if (image) {
+      const scale = Math.min(
+        (viewportDimensions.width - 100) / image?.width,
+        (viewportDimensions.height - 150) / image?.height
       );
+      setImageScale({ x: scale, y: scale });
+    }
 
     return () => {
       window.removeEventListener("resize", handleResize);
@@ -101,10 +101,10 @@ function Editor() {
   function downloadURI(name: string) {
     const image = imageRef.current?.clone();
     if (!image) return;
-    if(flippedX) {
-      image.scale({x: -1, y: 1});
-    } else if(flippedY) {
-      image.scale({x: 1, y: -1});
+    if (flippedX) {
+      image.scale({ x: -1, y: 1 });
+    } else if (flippedY) {
+      image.scale({ x: 1, y: -1 });
     } else {
       image.scale({ x: 1, y: 1 });
     }
@@ -126,18 +126,19 @@ function Editor() {
   function handleFlipX() {
     const image = imageRef?.current;
     if (!image) return;
-    // setFlippedX(!flippedX);
-    image.scaleY(-image.scaleY());
-    image.offsetY(image.getHeight() / 2);
-    
+
+    setImageScale({ x: -imageScale.x, y: imageScale.y });
+    image.offsetX(image.getWidth() / 2);
+    setFlippedX(!flippedX);
   }
 
   function handleFlipY() {
     const image = imageRef?.current;
     if (!image) return;
-    // setFlippedY(!flippedY);
-    image.scaleX(-image.scaleX());
-    image.offsetX(image.getWidth() / 2);
+
+    setImageScale({ x: imageScale.x, y: -imageScale.y });
+    image.offsetY(image.getHeight() / 2);
+    setFlippedY(!flippedY);
   }
 
   const handleRotate = () => {
@@ -145,7 +146,7 @@ function Editor() {
     const image = imageRef?.current;
     if (!image) return;
     image.rotate(90);
-  }
+  };
 
   const handleTransform = () => {
     const image = imageRef?.current;
@@ -196,15 +197,15 @@ function Editor() {
     };
 
     stage.on("mousedown", handleStageMouseDown);
-  }
+  };
 
   return (
     <div className="h-screen w-screen bg-slate-300 dark:bg-slate-700">
-      <header className="fixed top-0 z-10 flex h-14 w-full items-center justify-between rounded-b-xl bg-slate-100 dark:bg-slate-900 px-4 shadow-slate-100 dark:shadow-slate-100 drop-shadow-md">
+      <header className="fixed top-0 z-10 flex h-14 w-full items-center justify-between rounded-b-xl bg-slate-100 px-4 shadow-slate-100 drop-shadow-md dark:bg-slate-900 dark:shadow-slate-100">
         <div className="text-slate-800 dark:text-slate-200">
           Dimensions{" "}
           {imageStatus === "loaded" && image && (
-            <span className="inline-block rounded-md border border-slate-800 dark:border-slate-200 text-slate-800 dark:text-slate-200 px-2 py-1 text-sm">
+            <span className="inline-block rounded-md border border-slate-800 px-2 py-1 text-sm text-slate-800 dark:border-slate-200 dark:text-slate-200">
               {image.width} x {image.height}
             </span>
           )}
@@ -214,11 +215,11 @@ function Editor() {
           SIMPLE IMAGE EDITOR
         </div>
         <div className="share-section">
-          <button className="mx-2 rounded-sm border border-slate-200 bg-slate-500 dark:bg-slate-100 px-2 py-2 font-semibold text-slate-200 dark:text-slate-800 drop-shadow-lg hover:bg-slate-600 dark:hover:bg-slate-300">
+          <button className="mx-2 rounded-sm border border-slate-200 bg-slate-500 px-2 py-2 font-semibold text-slate-200 drop-shadow-lg hover:bg-slate-600 dark:bg-slate-100 dark:text-slate-800 dark:hover:bg-slate-300">
             Share
           </button>
           <button
-            className="drop mx-2 rounded-sm border border-slate-200 dark:border-slate-50 bg-slate-500 dark:bg-slate-100 px-2 py-2 font-semibold text-slate-200 dark:text-slate-800 shadow-lg hover:bg-slate-600 dark:hover:bg-slate-300"
+            className="drop mx-2 rounded-sm border border-slate-200 bg-slate-500 px-2 py-2 font-semibold text-slate-200 shadow-lg hover:bg-slate-600 dark:border-slate-50 dark:bg-slate-100 dark:text-slate-800 dark:hover:bg-slate-300"
             onClick={() => {
               if (imageRef.current) downloadURI("cubeEdited.jpg");
             }}
@@ -230,11 +231,8 @@ function Editor() {
 
       <main className="flex h-full flex-nowrap overflow-hidden shadow-md">
         {/* Toolbar */}
-        <div className="flex h-full w-2/12 max-w-[100px] shrink-0 flex-col items-center justify-start gap-2 bg-slate-100 dark:bg-slate-900 pt-16">
-          <Tool
-            toolName="crop"
-            icon={crop}
-            onClick={handleCrop}>
+        <div className="flex h-full w-2/12 max-w-[100px] shrink-0 flex-col items-center justify-start gap-2 bg-slate-100 pt-16 dark:bg-slate-900">
+          <Tool toolName="crop" icon={crop} onClick={handleCrop}>
             Crop
           </Tool>
           <Tool
@@ -269,15 +267,8 @@ function Editor() {
             onClick={() => setShowFilterSelection(!showFilerSelection)}>
             Filters
           </Tool>
-          <Tool toolName="transform" 
-            icon={transform}
-            onClick={handleTransform}>
-            Tform
-          </Tool>
-          <Tool toolName="adjust" 
-            icon={adjust}
-            onClick={() => {}}>
-            Adjust
+          <Tool toolName="transform" icon={transform} onClick={handleTransform}>
+            Transform
           </Tool>
           {/* <Tool toolName="blur" onClick={handleBlur}>
             Blur
@@ -309,12 +300,10 @@ function Editor() {
               ref={stageRef}
               onWheel={handleZoom}
             >
-              <Layer
-                ref={layerRef}
-              >
+              <Layer ref={layerRef}>
                 <FilteredImage
                   image={image}
-                  scale={{ x: imageScale, y: imageScale }}
+                  scale={{ x: imageScale.x, y: imageScale.y }}
                   ref={imageRef}
                 />
               </Layer>
