@@ -95,8 +95,7 @@ function Editor() {
     // console.log(newScale);
   };
 
-  // function from https://stackoverflow.com/a/15832662/512042
-  function downloadURI(name: string) {
+  const getImageAsBase64 = () => {
     const image = imageRef.current?.clone();
     if (!image) return;
     if (flippedX) {
@@ -108,13 +107,36 @@ function Editor() {
     }
     image.cache();
 
+    return image.toDataURL();
+  };
+
+  // function from https://stackoverflow.com/a/15832662/512042
+  const downloadURI = (name: string) => {
+    const imageURL = getImageAsBase64();
+
     var link = document.createElement("a");
     link.download = name;
-    link.href = image.toDataURL() || "#";
+    link.href = imageURL || "#";
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-  }
+  };
+
+  const postImage = () => {
+    const imageURL = getImageAsBase64();
+
+    const requestOptions = {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        name: "Anurag Lodhi",
+        title: "Test Image",
+        photo: imageURL,
+      }),
+    };
+
+    fetch("https://image-editor-khw1.onrender.com/api/v1/post", requestOptions);
+  };
 
   const handleCrop = () => {
     // to-do add crop functionality
@@ -217,7 +239,10 @@ function Editor() {
           SIMPLE IMAGE EDITOR
         </div>
         <div className="share-section">
-          <button className="mx-2 rounded-sm border border-slate-200 bg-slate-500 px-2 py-2 font-semibold text-slate-200 drop-shadow-lg hover:bg-slate-600 dark:bg-slate-100 dark:text-slate-800 dark:hover:bg-slate-300">
+          <button
+            className="mx-2 rounded-sm border border-slate-200 bg-slate-500 px-2 py-2 font-semibold text-slate-200 drop-shadow-lg hover:bg-slate-600 dark:bg-slate-100 dark:text-slate-800 dark:hover:bg-slate-300"
+            onClick={postImage}
+          >
             Share
           </button>
           <button
