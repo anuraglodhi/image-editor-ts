@@ -15,7 +15,7 @@ const Share = () => {
     fetch("https://image-editor-khw1.onrender.com/api/v1/post")
       .then((response) => response.json())
       .then((result) => setPosts(result.data));
-  });
+  }, []);
 
   const handleUpload = (e: FormEvent) => {
     const input = e.target as HTMLInputElement;
