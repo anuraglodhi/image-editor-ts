@@ -5,7 +5,6 @@ import { useSelector } from "react-redux";
 
 type FilteredImageProps = {
   image: HTMLImageElement;
-  scale: { x: number; y: number };
 };
 
 const useForwardedRef = (ref: React.ForwardedRef<Konva.Image>) => {
@@ -22,7 +21,7 @@ const useForwardedRef = (ref: React.ForwardedRef<Konva.Image>) => {
 };
 
 const FilteredImage = forwardRef<Konva.Image, FilteredImageProps>(
-  ({ image, scale }: FilteredImageProps, ref) => {
+  ({ image }: FilteredImageProps, ref) => {
     const filter = useSelector((state: any) => state.filter);
     const safeRef = useForwardedRef(ref);
 
@@ -46,20 +45,26 @@ const FilteredImage = forwardRef<Konva.Image, FilteredImageProps>(
       });
     }, []);
 
+    useEffect(() => {
+      console.log("From FilteredImage.tsx");
+      
+      console.log(safeRef.current);
+    });
     return (
       <Image
         image={image}
         width={image.width}
         height={image.height}
         {...filter.value}
-        scale={scale}
-        offsetX={image.width / 2}
-        offsetY={image.height / 2}
+        x={-image.width / 2}
+        y={-image.height / 2}
+        // offsetX={image.width / 2}
+        // offsetY={image.height / 2}
         ref={safeRef}
         draggable
       />
     );
   }
-); 
+);
 
 export default FilteredImage;
