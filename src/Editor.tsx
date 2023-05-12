@@ -10,13 +10,15 @@ import FilterSelection from "./components/FilterSelection";
 import Tool from "./components/Tool";
 import { crop, flipX, flipY, rotate, filter, transform, adjust } from "./assets";
 import { useSelector } from "react-redux";
+import Cropper from "./Cropper";
+import CropTool from "./components/CropTool";
 
 function Editor() {
   const imageURL = useSelector((state: any) => state.image.value);
   const [image, imageStatus] = useImage(imageURL);
 
   const viewportRef = useRef<HTMLDivElement>(null);
-  const imageRef = useRef<Konva.Image>(null);
+  const imageRef = useRef<Konva.Image | null>(null);
   const stageRef = useRef<Konva.Stage>(null);
   const layerRef = useRef<Konva.Layer>(null);
 
@@ -50,18 +52,23 @@ function Editor() {
     });
     window.addEventListener("resize", handleResize);
 
-    if (image) {
+
+    if (image && layerRef.current) {
       const scale = Math.min(
         (viewportDimensions.width - 100) / image?.width,
         (viewportDimensions.height - 150) / image?.height
       );
-      setImageScale({ x: scale, y: scale });
+      layerRef.current.scale({
+        x: scale,
+        y: scale,
+      });
+      layerRef.current.batchDraw();
     }
 
     return () => {
       window.removeEventListener("resize", handleResize);
     };
-  }, [image]);
+  }, [image, layerRef.current]);
 
   const handleZoom = (e: KonvaEventObject<WheelEvent>) => {
     e.evt.preventDefault();
@@ -141,9 +148,7 @@ function Editor() {
   };
 
   const handleCrop = () => {
-    
   }
-
 
   function handleFlipX() {
     const image = imageRef?.current;
@@ -257,9 +262,11 @@ function Editor() {
       <main className="flex h-full flex-nowrap overflow-hidden shadow-md">
         {/* Toolbar */}
         <div className="flex h-full w-2/12 max-w-[100px] shrink-0 flex-col items-center justify-start gap-2 bg-slate-100 pt-16 dark:bg-slate-900">
-          <Tool toolName="crop" icon={crop} onClick={handleCrop}>
+          {/* <Tool toolName="crop" icon={crop} onClick={handleCrop}>
+
             Crop
-          </Tool>
+          </Tool> */}
+          <CropTool imageRef={imageRef} layerRef={layerRef}/>
           <Tool
             toolName="flipX"
             icon={flipX}
@@ -287,9 +294,11 @@ function Editor() {
           >
             Rotate
           </Tool>
+
           <Tool toolName="filter" 
             icon={filter}
             onClick={() => setShowFilterSelection(!showFilerSelection)}>
+
             Filters
           </Tool>
           <Tool toolName="transform" icon={transform} onClick={handleTransform}>
@@ -328,19 +337,22 @@ function Editor() {
               <Layer ref={layerRef}>
                 <FilteredImage
                   image={image}
-                  scale={{ x: imageScale.x, y: imageScale.y }}
+
                   ref={imageRef}
                 />
+                {/* <Cropper /> */}
               </Layer>
             </Stage>
           )}
         </div>
 
         {/* Details */}
+
         <div className={`h-screen w-3/12 shrink-0 bg-slate-100 dark:bg-slate-900 pt-16 pb-2 shadow-md`}>
           <div className={`${!showFilerSelection ? "hidden": ""} h-full w-full overflow-y-scroll bg-inherit`}>
             <FilterSelection />
           </div>
+
         </div>
 
       </main>
