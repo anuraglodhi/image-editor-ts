@@ -302,7 +302,10 @@ function Editor() {
             Filters
           </Tool>
           <Tool toolName="transform" icon={transform} onClick={handleTransform}>
-            Transform
+            Tform
+          </Tool>
+          <Tool toolName="adjust" icon={adjust} onClick={() => {}}>
+            Adjust
           </Tool>
           {/* <Tool toolName="blur" onClick={handleBlur}>
             Blur
