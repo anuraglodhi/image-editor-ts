@@ -1,4 +1,4 @@
-import React, { FormEvent } from "react";
+import React, { FormEvent, useEffect, useState } from "react";
 import cube from "/src/assets/cube.jpg";
 import test from "/src/assets/test.jpg";
 import { useDispatch } from "react-redux";
@@ -9,6 +9,13 @@ import { useNavigate } from "react-router-dom";
 const Share = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+
+  const [posts, setPosts] = useState([]);
+  useEffect(() => {
+    fetch("https://image-editor-khw1.onrender.com/api/v1/post")
+      .then((response) => response.json())
+      .then((result) => setPosts(result.data));
+  });
 
   const handleUpload = (e: FormEvent) => {
     const input = e.target as HTMLInputElement;
@@ -30,8 +37,8 @@ const Share = () => {
   return (
     <>
       {/* <header className="flex h-16 items-center bg-slate-200 px-4 text-3xl font-bold"> */}
-      <header className="fixed top-0 z-10 flex h-14 w-full justify-center items-center rounded-b-sm bg-slate-100 dark:bg-slate-900 px-4 shadow-slate-100 dark:shadow-slate-100 drop-shadow-md">
-      <div className="flex flex-row items-center text-[32px] font-bold text-slate-800 dark:text-slate-200">
+      <header className="fixed top-0 z-10 flex h-14 w-full items-center justify-center rounded-b-sm bg-slate-100 px-4 shadow-slate-100 drop-shadow-md dark:bg-slate-900 dark:shadow-slate-100">
+        <div className="flex flex-row items-center text-[32px] font-bold text-slate-800 dark:text-slate-200">
           SIMPLE IMAGE EDITOR
         </div>
       </header>
@@ -40,7 +47,7 @@ const Share = () => {
           <label
             htmlFor="file-input"
             // className="flex h-16 w-48 items-center justify-center rounded-lg border bg-slate-300 hover:bg-slate-400 active:bg-slate-500"
-            className="rounded-sm bg-slate-500 dark:bg-slate-100 px-4 py-4 font-semibold text-slate-200 dark:text-slate-800 drop-shadow-lg hover:bg-slate-600 dark:hover:bg-slate-300"
+            className="rounded-sm bg-slate-500 px-4 py-4 font-semibold text-slate-200 drop-shadow-lg hover:bg-slate-600 dark:bg-slate-100 dark:text-slate-800 dark:hover:bg-slate-300"
           >
             Select Image
           </label>
@@ -52,21 +59,23 @@ const Share = () => {
             className="hidden"
           />
         </section>
-        <section className="flex flex-col items-center p-4 bg-slate-200 dark:bg-slate-800">
+        <section className="flex flex-col items-center bg-slate-200 p-4 dark:bg-slate-800">
           <div className="max-w-screen-lg">
-            <h2 className="w-full text-2xl font-bold text-slate-800 dark:text-slate-200 pb-2">
+            <h2 className="w-full pb-2 text-2xl font-bold text-slate-800 dark:text-slate-200">
               See what others have done
             </h2>
-            <div className="columns-3 gap-4">
-              <img src={cube} alt="" width={500} className="w-full pb-4" />
-              <img src={test} alt="" width={200} className="w-full pb-4" />
-              <img src={cube} alt="" width={500} className="w-full pb-4" />
-              <img src={test} alt="" width={400} className="w-full pb-4" />
-              <img src={test} alt="" width={300} className="w-full pb-4" />
-              <img src={test} alt="" width={600} className="w-full pb-4" />
-              <img src={cube} alt="" width={500} className="w-full pb-4" />
-              <img src={cube} alt="" width={500} className="w-full pb-4" />
-              <img src={test} alt="" width={600} className="w-full pb-4" />
+            <div className="columns-1 gap-4 md:columns-2 lg:columns-3">
+              {posts &&
+                posts.map((post: any) => {
+                  return (
+                    <img
+                      src={post.photo}
+                      alt={post.title}
+                      className="mb-4 rounded-lg shadow-slate-100 drop-shadow-md dark:shadow-slate-100"
+                      key={post._id}
+                    />
+                  );
+                })}
             </div>
           </div>
         </section>
