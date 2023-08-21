@@ -1,4 +1,4 @@
-# image-editor-ts
+# Image Editor
 
 Run these commands to get started
 ```
